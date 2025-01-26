@@ -1,0 +1,9 @@
+all:
+  children:
+    master:
+      hosts:
+        piadmin:
+          ansible_host: ${{ secrets.PIALPHA_HOST }}
+          ansible_user: piadmin
+          ansible_become: true
+          ansible_become_password: ${{ secrets.PIALPHA_PIADMIN_PASSWORD }}
