@@ -2,7 +2,7 @@ all:
   children:
     master:
       hosts:
-        piadmin:
+        pialpha:
           ansible_host: ${{ secrets.PIALPHA_HOST }}
           ansible_user: piadmin
           ansible_become: true
