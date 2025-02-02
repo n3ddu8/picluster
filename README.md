@@ -18,3 +18,8 @@ You can test the connectivity by running:
 ```shell
 ansible -i inventory.yaml all -m ping
 ```
+
+## Usage
+```shell
+ansible-playbook -i inventory.yaml playbook.yaml
+```

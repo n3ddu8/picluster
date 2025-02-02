@@ -1,0 +1,29 @@
+---
+- name: Configure Pi
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update package list and upgrade system
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Copy cmdline.txt
+      copy:
+        src: ./cmdline.txt
+        dest: /boot/cmdline.txt
+
+    - name: Ensure dependencies
+      apt:
+        name:
+          - curl
+          - linux-modules-extra-raspi
+        state: present
+
+- name: Setup Master
+  hosts: master
+  become: yes
+  tasks:
+    - name: Download and run install script
+      shell: |
+        curl -sfL https://get.k3s.io | sh -
