@@ -1,0 +1,30 @@
+name: Ansible Ping
+
+on:
+  workflow_dispatch:  # Manual triggering only
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: sudo apt update && sudo apt install -y ansible
+
+      - name: Install and Connect to Tailscale
+        run: |
+          curl -fsSL https://tailscale.com/install.sh | sh
+          sudo tailscale up --authkey=${{ secrets.TAILSCALE_AUTHKEY }} --hostname=github-runner
+
+      - name: Run Ansible Ping
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Add the private key as an env variable
+          ANSIBLE_BECOME_PASSWORD: ${{ secrets.PIALPHA_PIADMIN_PASSWORD }}  # Add the sudo password
+        run: |
+          mkdir -p ~/.ssh
+          echo "$ANSIBLE_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa  # Save private key to id_rsa
+          chmod 600 ~/.ssh/id_rsa  # Set appropriate permissions
+          ansible -i inventory.yaml all -m ping --extra-vars "ansible_host=${{ secrets.PIALPHA_HOST }} ansible_ssh_private_key_file=~/.ssh/id_rsa"

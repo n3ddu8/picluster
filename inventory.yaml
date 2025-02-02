@@ -1,0 +1,7 @@
+all:
+  children:
+    master:
+      hosts:
+        pialpha:
+          ansible_user: piadmin
+          ansible_become: true

@@ -1,4 +1,9 @@
 {
   "name": "picluster",
   "image": "mcr.microsoft.com/devcontainers/python:3.12"
+  "features": {
+    "ghcr.io/devcontainers/features/nix:1": {},
+    "ghcr.io/devcontainers-extra/features/tmux-apt-get:1": {},
+  },
+  "postCreateCommand": "sh ./setup.sh",
 }
