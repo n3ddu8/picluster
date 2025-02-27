@@ -23,6 +23,12 @@
   hosts: master
   become: yes
   tasks:
+    - name: Check if K3s is already installed
+      stat:
+        path: /usr/local/bin/k3s
+      register: k3s_installed
+
     - name: Download and run install script
       shell: |
         curl -sfL https://get.k3s.io | sh -
+      when: not k3s_installed.stat.exists
