@@ -17,7 +17,6 @@
       apt:
         name:
           - curl
-          - linux-modules-extra-raspi
         state: present
 
 - name: Setup Master
