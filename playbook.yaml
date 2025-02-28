@@ -28,7 +28,7 @@
         path: /usr/local/bin/k3s
       register: k3s_installed
 
-    - name: Download and run install script
+    - name: Download and run install script for K3s
       shell: |
         curl -sfL https://get.k3s.io | sh -
       when: not k3s_installed.stat.exists
@@ -56,4 +56,33 @@
         executable: /bin/bash
       register: k3s_install
       changed_when: "'Already installed' not in k3s_install.stdout"
+
+- name: Install Longhorn on all nodes (if not already installed)
+  hosts: all
+  become: yes
+  tasks:
+    - name: Check if Longhorn is already installed
+      kubectl:
+        command: get pod -n longhorn-system
+      register: longhorn_installed
+      failed_when: false
+
+    - name: Apply Longhorn deployment if not installed
+      shell: |
+        kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.2.3/deploy/longhorn.yaml
+      when: longhorn_installed.failed
+      notify:
+        - Wait for Longhorn to be ready
+
+- name: Wait for Longhorn to be ready
+  hosts: all
+  become: yes
+  tasks:
+    - name: Wait for Longhorn pods to be ready
+      wait_for:
+        port: 9443
+        host: "{{ ansible_host }}"
+        state: started
+        delay: 10
+        timeout: 300
 
