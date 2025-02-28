@@ -1,5 +1,5 @@
 # PiCluster
-GitOps approach to managing the infrastructure for my Raspberry Pi Kubernetes cluster using a traditional `push` (CI/CD) model.
+GitOps approach to managing the infrastructure for my Raspberry Pi K3S cluster using a traditional `push` (CI/CD) model.
 - Built with:
   - Ansible: for automation.
   - Tailscale: for managing network access.
@@ -7,7 +7,17 @@ GitOps approach to managing the infrastructure for my Raspberry Pi Kubernetes cl
 
 Workflows are idempotent so can be rerun on existing hardware without risk of breakage.
 
-I am running this on Raspberry Pi 4's with Ubuntu 24.04 LTS, however in theory it should work on any devices running a Debian based OS.
+## Pre-requisites
+
+In order to utalise the workflow with limited changes, each node on the cluster will be running a Debian based OS with SSH access configured, a hostname of `pi<n>` where `<n>` is a letter in the greek alphabet and a `piadmin` user with sudo privaledges.
+
+At time of writing, I am running several Raspberry Pi 4's running Ubuntu 24.04 LTS:
+- pialpha
+- pibeta
+- pigamma
+- pidelta
+
+I reserve the right to modify this over time as my cluster grows and changes without necerssarily updating this document (although I will endeavour to keep it up-to-date where possible). Please review particularly the `inventory.yaml` file if you intend to utalise this workflow for your own purposes.
 
 ## Setup
 1. [Setup a tailnet](https://tailscale.com/kb/1017/install) if you haven't already.
@@ -20,9 +30,9 @@ I am running this on Raspberry Pi 4's with Ubuntu 24.04 LTS, however in theory i
 curl -fsSL https://tailscale.com/install.sh | sh
 sudo tailscale up
 ```
-7. On your local machine generate an SSH keypair by running `ssh-keygen` (Mac/Linux), this will create two key files in your home directories `.ssh` sub-directory.
+7. Generate an SSH keypair, if you have access to another machine running Mac | Linux you can run `ssh-keygen`, this will create two key files in your home directories `.ssh` sub-directory. Otherwise, many password managers (for example Bitwarden) have SSH Key Generators built in. If all else fails you can use an online generator such as [this one](https://www.wpoven.com/tools/create-ssh-key).
 8. Copy the private key file (the one without a `.pub` extension), and navigate to `Settings -> Secrets and varaibles -> Actions` in your repo and click `New repository secret`. Call it `SSH_PRIVATE_KEY`.
-9. Copy the public key file to each node device, if you have SSH access from the machine where you generated the file, you can do this with `ssh-copy-id <username>@>hostname>`, otherwise on the node itself, open `~/.ssh/authorized_keys` and paste the key on a new line.
+9. Copy the public key file to each node device, if you have SSH access from the machine where you generated the file, you can do this with `ssh-copy-id <username>@>hostname>`, otherwise on the node itself, open `~/.ssh/authorized_keys` (create it if it doesn't exist) and paste the key on a new line.
 10. On each new node, run `echo "piadmin ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/piadmin`, this allows the workflow sudo access without having to store the password in the repo.
 
 For each new node you add to the cluster, run steps 6, 9 and 10. These can be added anytime, not just during initial setup.
