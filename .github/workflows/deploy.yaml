@@ -34,13 +34,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          
+
       - name: Export Kubeconfig
         run: |
           mkdir -p ~/.kube  # Create the .kube directory
           echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config  # Write the kubeconfig
           export KUBEVIRT_KUBECONFIG=~/.kube/config  # Ensure it's available to kubectl
-
 
       - name: Run Ansible Playbook
         run: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.yaml playbook.yaml
