@@ -6,12 +6,23 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install Ansible
         run: sudo apt update && sudo apt install -y ansible
+
+      - name: Install kubectl
+        run: |
+          curl -LO https://dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubectl
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Install Ansible Kubernetes Collection
+        run: |
+          ansible-galaxy collection install community.kubernetes
 
       - name: Install and Connect to Tailscale
         run: |
@@ -23,6 +34,11 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+
+      - name: Export Kubeconfig
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+          export KUBEVIRT_KUBECONFIG=~/.kube/config
 
       - name: Run Ansible Playbook
         run: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.yaml playbook.yaml
