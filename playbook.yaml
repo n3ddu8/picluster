@@ -32,3 +32,28 @@
       shell: |
         curl -sfL https://get.k3s.io | sh -
       when: not k3s_installed.stat.exists
+
+    - name: Retrieve K3S node token
+      slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: k3s_token
+
+- name: Setup Agents
+  hosts: agents
+  become: yes
+  tasks:
+    - name: Check if K3s is already installed
+      stat:
+        path: /usr/local/bin/k3s
+      register: k3s_installed
+
+    - name: Join node to K3s cluster
+      shell: |
+        export K3S_URL=https://{{ hostvars['master']['ansible_host'] }}:6443
+        export K3S_TOKEN={{ hostvars['master']['k3s_token']['content'] | b64decode }}
+        curl -sfL https://get.k3s.io | sh -
+      args:
+        executable: /bin/bash
+      register: k3s_install
+      changed_when: "'Already installed' not in k3s_install.stdout"
+
