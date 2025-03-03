@@ -17,7 +17,19 @@
       apt:
         name:
           - curl
+          - lsb-release
+          - jq
+          - open-iscsi
         state: present
+        update_cache: yes
+
+    - name: Start the iscsid systemd service
+      become: yes
+      systemd:
+        name: iscsid
+        enabled: yes
+        state: started
+
 
 - name: Setup Master
   hosts: master
@@ -37,6 +49,7 @@
       slurp:
         src: /var/lib/rancher/k3s/server/node-token
       register: k3s_token
+
 
 - name: Setup Agents
   hosts: agents
