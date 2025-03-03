@@ -45,6 +45,10 @@
         curl -sfL https://get.k3s.io | sh -
       when: not k3s_installed.stat.exists
 
+    - name: Change owner of k3s.yaml
+      shell: |
+        chown {{ ansible_user }}:{{ ansible_user }} /etc/rancher/k3s/k3s.yaml
+
     - name: Retrieve K3S node token
       slurp:
         src: /var/lib/rancher/k3s/server/node-token
