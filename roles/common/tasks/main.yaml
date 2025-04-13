@@ -1,0 +1,19 @@
+# roles/common/tasks/main.yaml
+- name: Ensure hostname is correct
+  hostname:
+    name: "{{ inventory_hostname_short }}"
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install base packages
+  apt:
+    name:
+      - curl
+      - sudo
+      - git
+      - gnupg
+      - software-properties-common
+    state: present

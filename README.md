@@ -15,7 +15,6 @@ At time of writing, I am running several Raspberry Pi 4's running Ubuntu 24.04 L
 - pialpha
 - pibeta
 - pigamma
-- pidelta
 
 I reserve the right to modify this over time as my cluster grows and changes without necerssarily updating this document (although I will endeavour to keep it up-to-date where possible). Please review particularly the `inventory.yaml` file if you intend to utalise this workflow for your own purposes.
 

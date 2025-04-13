@@ -1,0 +1,13 @@
+# roles/storage/tasks/main.yaml
+- name: Create MinIO data dir
+  file:
+    path: /mnt/minio
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Create persistent data dir for notebooks
+  file:
+    path: /mnt/notebooks
+    state: directory

@@ -1,0 +1,12 @@
+# roles/bootstrap/tasks/main.yaml
+- name: Ensure SSD mount point exists
+  file:
+    path: /mnt
+    state: directory
+
+- name: Ensure system boots from SSD (just validate)
+  shell: |
+    mount | grep "on / type" | grep -q "/dev/sd"
+  register: ssd_boot
+  changed_when: false
+  failed_when: ssd_boot.rc != 0

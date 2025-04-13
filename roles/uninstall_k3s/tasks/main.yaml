@@ -1,0 +1,33 @@
+---
+- name: Run K3S uninstall script if present
+  ansible.builtin.shell: |
+    if [ -f /usr/local/bin/k3s-uninstall.sh ]; then
+      /usr/local/bin/k3s-uninstall.sh
+    fi
+
+- name: Remove leftover etcd data
+  file:
+    path: /var/lib/rancher/k3s
+    state: absent
+
+- name: Remove kubeconfig
+  file:
+    path: /etc/rancher/k3s/k3s.yaml
+    state: absent
+
+- name: Remove Rancher directory
+  file:
+    path: /etc/rancher
+    state: absent
+
+- name: Remove K3S binary
+  file:
+    path: /usr/local/bin/k3s
+    state: absent
+
+- name: Clean up kubeconfig from pi user
+  file:
+    path: /home/pi/.kube/config
+    state: absent
+  become_user: piadmin
+  ignore_errors: yes

@@ -1,0 +1,11 @@
+---
+- name: Get root block device (non-SD card)
+  command: lsblk -o NAME,TYPE,MOUNTPOINT | grep ' /$' | awk '{print $1}'
+  register: root_device
+
+- name: Wipe root disk (EXTREMELY DANGEROUS!)
+  shell: |
+    dd if=/dev/zero of=/dev/{{ root_device.stdout }} bs=1M count=100 status=progress
+  when: root_device.stdout != "" and root_device.stdout != "mmcblk0"
+  ignore_errors: false
+  tags: [wipe, destroy]

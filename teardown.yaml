@@ -1,73 +1,10 @@
 ---
-- name: Stop K3s Service
-  hosts: all
-  become: yes
-  tasks:
-    - name: Stop K3s service
-      ansible.builtin.systemd:
-        name: k3s
-        state: stopped
-        enabled: no
-      ignore_errors: yes
+- name: Teardown K3S Cluster
+  hosts: k3s_cluster
+  become: true
+  gather_facts: false
 
-- name: Remove K3s Servers
-  hosts: master
-  become: yes
-  tasks:
-    - name: Uninstall K3s
-      ansible.builtin.command:
-        cmd: /usr/local/bin/k3s-uninstall.sh
-      args:
-        removes: /usr/local/bin/k3s-uninstall.sh
-      ignore_errors: yes
-
-- name: Remove K3s Agents
-  hosts: agents
-  become: yes
-  tasks:
-    - name: Uninstall K3s on agent nodes
-      ansible.builtin.command:
-        cmd: /usr/local/bin/k3s-agent-uninstall.sh
-      args:
-        removes: /usr/local/bin/k3s-agent-uninstall.sh
-      ignore_errors: yes
-
-- name: Stop K3s Service
-  hosts: all
-  become: yes
-  tasks:
-    - name: Remove K3s binaries and data
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - /usr/local/bin/k3s
-        - /usr/local/bin/k3s-agent
-        - /usr/local/bin/k3s-uninstall.sh
-        - /usr/local/bin/k3s-agent-uninstall.sh
-        - /etc/rancher/k3s
-        - /var/lib/rancher/k3s
-        - /var/lib/kubelet
-        - /etc/systemd/system/k3s.service
-        - /etc/systemd/system/k3s-agent.service
-        - /etc/systemd/system/k3s.service.env
-        - /etc/systemd/system/k3s-agent.service.env
-
-    - name: Reload systemd daemon
-      ansible.builtin.systemd:
-        daemon_reload: yes
-
-    - name: Remove K3s iptables rules
-      ansible.builtin.command:
-        cmd: iptables -F
-      ignore_errors: yes
-
-    - name: Remove leftover network interfaces
-      ansible.builtin.command:
-        cmd: ip link delete cni0
-      ignore_errors: yes
-
-    - name: Remove leftover Flannel interfaces
-      ansible.builtin.command:
-        cmd: ip link delete flannel.1
-      ignore_errors: yes
+  roles:
+    - role: uninstall_k3s
+    - role: wipe_volumes
+    # - role: wipe_ssd  # Uncomment if you want to fully wipe the SSD rootfs (DESTROYS OS)

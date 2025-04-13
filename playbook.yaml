@@ -1,76 +1,8 @@
----
-- name: Configure Pi
-  hosts: all
-  become: yes
-  tasks:
-    - name: Update package list and upgrade system
-      apt:
-        update_cache: yes
-        upgrade: dist
-
-    - name: Copy cmdline.txt
-      copy:
-        src: ./cmdline.txt
-        dest: /boot/cmdline.txt
-
-    - name: Ensure dependencies
-      apt:
-        name:
-          - curl
-          - lsb-release
-          - jq
-          - open-iscsi
-        state: present
-        update_cache: yes
-
-    - name: Start the iscsid systemd service
-      become: yes
-      systemd:
-        name: iscsid
-        enabled: yes
-        state: started
-
-
-- name: Setup Master
-  hosts: master
-  become: yes
-  tasks:
-    - name: Check if K3s is already installed
-      stat:
-        path: /usr/local/bin/k3s
-      register: k3s_installed
-
-    - name: Download and run install script
-      shell: |
-        curl -sfL https://get.k3s.io | sh -
-      when: not k3s_installed.stat.exists
-
-    - name: Change owner of k3s.yaml
-      shell: |
-        chown {{ ansible_user }}:{{ ansible_user }} /etc/rancher/k3s/k3s.yaml
-
-    - name: Retrieve K3S node token
-      slurp:
-        src: /var/lib/rancher/k3s/server/node-token
-      register: k3s_token
-
-
-- name: Setup Agents
-  hosts: agents
-  become: yes
-  tasks:
-    - name: Check if K3s is already installed
-      stat:
-        path: /usr/local/bin/k3s
-      register: k3s_installed
-
-    - name: Join node to K3s cluster
-      shell: |
-        export K3S_URL=https://{{ hostvars['master']['ansible_host'] }}:6443
-        export K3S_TOKEN={{ hostvars['master']['k3s_token']['content'] | b64decode }}
-        curl -sfL https://get.k3s.io | sh -
-      args:
-        executable: /bin/bash
-      register: k3s_install
-      changed_when: "'Already installed' not in k3s_install.stdout"
-
+- name: Setup Raspberry Pi K3S HA Cluster
+  hosts: k3s_cluster
+  become: true
+  roles:
+    - common
+    - bootstrap
+    - k3s_server
+    - storage
