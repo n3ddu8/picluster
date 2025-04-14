@@ -6,3 +6,5 @@
     - bootstrap
     - k3s_server
     - storage
+    - install_argocd
+    - bootstrap_gitops

@@ -1,0 +1,11 @@
+- name: Render ArgoCD root application manifest
+  template:
+    src: root-app.yaml.j2
+    dest: /tmp/root-app.yaml
+
+- name: Apply ArgoCD root application manifest
+  shell: |
+    kubectl apply -f /tmp/root-app.yaml
+  args:
+    executable: /bin/bash
+  run_once: true
