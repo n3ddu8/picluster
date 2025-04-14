@@ -10,3 +10,11 @@
   args:
     executable: /bin/bash
   run_once: true
+
+- name: Patch argocd-server service to NodePort for external access
+  ansible.builtin.shell: |
+    kubectl patch svc argocd-server -n argocd \
+      -p '{"spec": {"type": "NodePort", "ports": [{"port": 80, "targetPort": 8080, "nodePort": 30080, "protocol": "TCP", "name": "http"}]}}'
+  args:
+    executable: /bin/bash
+  run_once: true
