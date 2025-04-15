@@ -45,7 +45,7 @@ The workflow uses a manual `workflow_dispatch` trigger so you can freely make ch
 1. SSH into any node in the cluster.
 2. Run the following and take note of the returned value, this is your admin password:
 ```
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+kubectl -n argocd get secret argocd-initial-admin-secret   -o jsonpath="{.data.password}" | base64 -d && echo
 ```
 3. On a machine with access to your network, open a browser and visit `https://<hostname>:30080`, where `hostname` is the hostname or IP of any node in the cluster.
 4. Login with the user `admin` and the password you retrieved in step 2.
