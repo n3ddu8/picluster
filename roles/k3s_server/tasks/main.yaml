@@ -6,7 +6,7 @@
 
 - name: Initialize first control plane node
   shell: |
-    INSTALL_K3S_EXEC="server --cluster-init --write-kubeconfig-mode 644" /tmp/install-k3s.sh
+    INSTALL_K3S_EXEC="server --cluster-init --write-kubeconfig-mode 600" /tmp/install-k3s.sh
   when: inventory_hostname == groups['k3s_cluster'][0]
   args:
     creates: /etc/rancher/k3s/k3s.yaml
@@ -14,6 +14,7 @@
 - name: Get K3S token from first node
   command: cat /var/lib/rancher/k3s/server/node-token
   register: k3s_token
+  no_log: true
   when: inventory_hostname == groups['k3s_cluster'][0]
 
 - name: Set K3S token fact for all nodes
@@ -25,7 +26,7 @@
   shell: |
     K3S_URL="https://{{ groups['k3s_cluster'][0] }}:6443" \
     K3S_TOKEN="{{ k3s_token }}" \
-    INSTALL_K3S_EXEC="server --write-kubeconfig-mode 644" /tmp/install-k3s.sh
+    INSTALL_K3S_EXEC="server --write-kubeconfig-mode 600 --flannel-backend=wireguard-native" /tmp/install-k3s.sh
   when:
     - inventory_hostname != groups['k3s_cluster'][0]
     - k3s_token is defined

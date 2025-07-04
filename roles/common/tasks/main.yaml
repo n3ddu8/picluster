@@ -3,6 +3,30 @@
   hostname:
     name: "{{ inventory_hostname_short }}"
 
+- name: Harden SSH daemon config
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^{{ item.key }}'
+    line: '{{ item.key }} {{ item.value }}'
+    state: present
+    create: no
+    backrefs: yes
+  loop:
+    - { key: 'PasswordAuthentication', value: 'no' }
+    - { key: 'PermitRootLogin',        value: 'no' }
+
+- name: Restart SSH to apply config changes
+  service:
+    name: ssh
+    state: restarted
+
+- name: Allow K3S API only from Tailscale subnet
+  ufw:
+    rule: allow
+    port: '6443'
+    proto: tcp
+    from_ip: '100.64.0.0/10'
+
 - name: Update apt cache
   apt:
     update_cache: yes
