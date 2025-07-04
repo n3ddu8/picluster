@@ -6,7 +6,7 @@
 - name: Harden SSH daemon config
   lineinfile:
     path: /etc/ssh/sshd_config
-    regexp: '^{{ item.key }}'
+    regexp: '^(#\s*)?{{ item.key }}\s+'
     line: '{{ item.key }} {{ item.value }}'
     state: present
     create: no
@@ -14,11 +14,14 @@
   loop:
     - { key: 'PasswordAuthentication', value: 'no' }
     - { key: 'PermitRootLogin',        value: 'no' }
+  register: ssh_hardening_results
 
 - name: Restart SSH to apply config changes
   service:
     name: ssh
     state: restarted
+  when: ssh_hardening_results.results | selectattr('changed', 'equalto', true) | list | length > 0
+
 
 - name: Allow K3S API only from Tailscale subnet
   ufw:
