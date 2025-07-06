@@ -10,10 +10,10 @@
     apt:
       name:
         - curl
-        - sudo
         - git
         - gnupg
         - software-properties-common
+        - sudo
       state: present
 
   - name: Install K3S Master
@@ -43,3 +43,28 @@
         sh -
     when:
       - inventory_hostname != groups['k3s_cluster'][0]
+
+  - name: Check if sshd_config exists
+    stat:
+      path: /etc/ssh/sshd_config
+    register: sshd_config_file
+
+  - name: Harden SSH daemon config
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '^(#\s*)?{{ item.key }}\s+'
+      line: '{{ item.key }} {{ item.value }}'
+      state: present
+      create: no
+      backrefs: yes
+    loop:
+      - { key: 'PasswordAuthentication', value: 'no' }
+      - { key: 'PermitRootLogin',        value: 'no' }
+    register: ssh_hardening_results
+    when: sshd_config_file.stat.exists
+
+  - name: Restart SSH to apply config changes
+    service:
+      name: ssh
+      state: restarted
+    when: ssh_hardening_results.results | selectattr('changed', 'equalto', true) | list | length > 0
