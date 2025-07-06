@@ -14,7 +14,19 @@
         - gnupg
         - software-properties-common
         - sudo
+        - ufw
       state: present
+
+  - name: Enable UFW
+    community.general.ufw:
+      state: enabled
+  
+  - name: Allow K3S API only from Tailscale subnet
+    ufw:
+      rule: allow
+      port: '6443'
+      proto: tcp
+      from_ip: '100.64.0.0/10'
 
   - name: Install K3S Master
     shell: |
