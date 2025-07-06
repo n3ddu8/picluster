@@ -1,0 +1,45 @@
+- name: Setup Raspberry Pi K3S Cluster
+  hosts: k3s_cluster
+  become: true
+  tasks:
+  - name: Update apt cache
+    apt:
+      update_cache: yes
+
+  - name: Install base packages
+    apt:
+      name:
+        - curl
+        - sudo
+        - git
+        - gnupg
+        - software-properties-common
+      state: present
+
+  - name: Install K3S Master
+    shell: |
+      curl -sfL https://get.k3s.io | \
+        INSTALL_K3S_EXEC="--write-kubeconfig-mode 600" \
+        K3S_KUBELET_ARGS="--fail-swap-on=false" \
+        sh -
+    when: inventory_hostname == groups['k3s_cluster'][0]
+
+  - name: Get K3S token from server node
+    command: cat /var/lib/rancher/k3s/server/node-token
+    register: k3s_token
+    no_log: true
+    when: inventory_hostname == groups['k3s_cluster'][0]
+
+  - name: Set K3S token fact for agent nodes
+    set_fact:
+      k3s_token: "{{ hostvars[groups['k3s_cluster'][0]]['k3s_token'].stdout }}"
+    when: inventory_hostname != groups['k3s_cluster'][0]
+
+  - name: Install K3S agent
+    shell: |
+      curl -sfL https://get.k3s.io | \
+        K3S_URL="https://{{ groups['k3s_cluster'][0] }}:6443" \
+        K3S_TOKEN="{{ k3s_token }}" \
+        sh -
+    when:
+      - inventory_hostname != groups['k3s_cluster'][0]

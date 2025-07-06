@@ -1,0 +1,7 @@
+all:
+  children:
+    k3s_cluster:
+      hosts:
+        alpha:
+        beta:
+        gamma:
