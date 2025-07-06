@@ -1,4 +1,4 @@
-- name: Setup Raspberry Pi K3S Cluster
+- name: Setup K3S Cluster
   hosts: k3s_cluster
   become: true
   tasks:
